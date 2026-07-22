@@ -1,28 +1,114 @@
-from flask import jsonify
+from flask import request, jsonify, current_app
+from werkzeug.security import generate_password_hash, check_password_hash
+from itsdangerous import URLSafeTimedSerializer
+from config.db import mysql
+import MySQLdb
 
 def register():
-    return jsonify({
-        "status": "success",
-        "message": "User registered successfully",
-        "data": {
-            "user_id": 101,
-            "username": "dummy_user",
-            "email": "dummy@example.com"
-        }
-    }), 201
+    data = request.get_json() or {}
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    role = data.get('role', 'user')
+
+    if not username or not email or not password:
+        return jsonify({
+            "status": "error",
+            "message": "Username, email, and password are required fields"
+        }), 400
+
+    if role not in ['user', 'organizer', 'admin']:
+        return jsonify({
+            "status": "error",
+            "message": "Invalid role specified"
+        }), 400
+
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT user_id FROM users WHERE email = %s", (email,))
+        if cursor.fetchone():
+            cursor.close()
+            return jsonify({
+                "status": "error",
+                "message": "Email is already registered"
+            }), 400
+
+        password_hash = generate_password_hash(password)
+        cursor.execute(
+            "INSERT INTO users (username, email, password_hash, role) VALUES (%s, %s, %s, %s)",
+            (username, email, password_hash, role)
+        )
+        mysql.connection.commit()
+        user_id = cursor.lastrowid
+        cursor.close()
+
+        return jsonify({
+            "status": "success",
+            "message": "User registered successfully",
+            "data": {
+                "user_id": user_id,
+                "username": username,
+                "email": email,
+                "role": role
+            }
+        }), 201
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An error occurred during registration: {str(e)}"
+        }), 500
 
 def login():
-    return jsonify({
-        "status": "success",
-        "message": "User logged in successfully",
-        "data": {
-            "token": "dummy-jwt-token-xyz123",
-            "user": {
-                "user_id": 101,
-                "username": "dummy_user"
+    data = request.get_json() or {}
+    email = data.get('email')
+    password = data.get('password')
+
+    if not email or not password:
+        return jsonify({
+            "status": "error",
+            "message": "Email and password are required fields"
+        }), 400
+
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT user_id, username, email, password_hash, role FROM users WHERE email = %s", (email,))
+        user = cursor.fetchone()
+        cursor.close()
+
+        if not user or not check_password_hash(user['password_hash'], password):
+            return jsonify({
+                "status": "error",
+                "message": "Invalid email or password"
+            }), 401
+
+        serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+        token = serializer.dumps({
+            "user_id": user['user_id'],
+            "username": user['username'],
+            "email": user['email'],
+            "role": user['role']
+        }, salt='auth-salt')
+
+        return jsonify({
+            "status": "success",
+            "message": "User logged in successfully",
+            "data": {
+                "token": token,
+                "user": {
+                    "user_id": user['user_id'],
+                    "username": user['username'],
+                    "email": user['email'],
+                    "role": user['role']
+                }
             }
-        }
-    }), 200
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"An error occurred during login: {str(e)}"
+        }), 500
 
 def logout():
     return jsonify({

@@ -1,10 +1,28 @@
+import os
 from flask import Flask
+from flask_cors import CORS
 from routes.auth_routes import auth_bp
 from routes.event_routes import event_bp
 from routes.booking_routes import booking_bp
 from routes.admin_routes import admin_bp
+from config.db import mysql, init_db
 
 app = Flask(__name__)
+CORS(app)
+
+# Application Configuration
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'event-ticket-booking-secret-key-12345')
+app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST', 'localhost')
+app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'root')
+app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD', '')
+app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB', 'event_booking')
+app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+
+# Initialize MySQL
+mysql.init_app(app)
+
+# Initialize Database Schema & Seed Data
+init_db(app)
 
 # Register Blueprints
 app.register_blueprint(auth_bp)
