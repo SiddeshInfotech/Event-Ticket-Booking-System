@@ -1,0 +1,168 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background: #0f0016;
+}
+
+.page {
+  min-height: 100vh;
+  background: #0f0016;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.container {
+  width: 900px;
+}
+
+.back {
+  color: #bbb;
+  margin-bottom: 25px;
+  cursor: pointer;
+}
+
+p {
+    text-align:left;
+}
+
+h1 {
+  color: white;
+  margin-bottom: 25px;
+  text-align:left;
+}
+
+.card,
+.summary {
+  background: #353535;
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 20px;
+}
+
+.card h2,
+.summary h2 {
+  color: white;
+  margin-bottom: 15px;
+  text-align:left;
+}
+
+.card p {
+  color: #d2d2d2;
+  margin-top: 5px;
+}
+
+.ticket-options {
+  display: flex;
+  gap: 20px;
+}
+
+.ticket-options button {
+  flex: 1;
+  height: 90px;
+  border: none;
+  border-radius: 15px;
+  background: #22003e;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.ticket-options button span {
+  margin-top: 8px;
+  font-size: 16px;
+}
+
+.active {
+  border: 3px solid #bf5cff;
+}
+
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.counter button {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 10px;
+  background: #22003e;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.counter span {
+  color: white;
+  font-size: 36px;
+  width: 40px;
+  text-align: center;
+}
+
+.counter small {
+  color: #ccc;
+}
+
+.summary {
+  background: #1d0d25;
+}
+
+.row,
+.total {
+  display: flex;
+  justify-content: space-between;
+  color: white;
+  margin: 12px 0;
+}
+
+.total {
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffe600;
+}
+
+hr {
+  margin: 20px 0;
+  border: 1px solid #555;
+}
+
+.payment-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 16px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(to right, #c45cff, #b546ff);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.payment-btn:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .ticket-options {
+    flex-direction: column;
+  }
+
+  .container {
+    width: 100%;
+  }
+
+  .counter {
+    flex-wrap: wrap;
+  }
+}
