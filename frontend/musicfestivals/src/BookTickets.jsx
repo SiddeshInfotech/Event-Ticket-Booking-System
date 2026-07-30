@@ -23,6 +23,32 @@ const BookTickets = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
 
+  const continueToPayment = async () => {
+  try {
+    const response = await fetch("http://127.0.0.1:5000/book-ticket", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event_id: 1,
+        number_of_tickets: quantity,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+      window.location.href = "/payment";
+    } else {
+      alert(data.message);
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Server Error");
+  }
+};
+
   return (
     <div className="page">
       <div className="container">
@@ -77,24 +103,27 @@ const BookTickets = () => {
 
           <div className="row">
             <span>{ticketType} Admission × {quantity}</span>
-            <span>${subtotal}</span>
+            <span>₹{subtotal}</span>
           </div>
 
           <div className="row">
             <span>Service Fee (5%)</span>
-            <span>${serviceFee}</span>
+            <span>₹{serviceFee}</span>
           </div>
 
           <hr />
 
           <div className="total">
             <span>Total</span>
-            <span>${total}</span>
+            <span>₹{total}</span>
           </div>
 
-          <button className="payment-btn">
-            Continue To Payment
-          </button>
+          <button
+  className="payment-btn"
+  onClick={continueToPayment}
+>
+  Continue To Payment
+</button>
         </div>
       </div>
     </div>

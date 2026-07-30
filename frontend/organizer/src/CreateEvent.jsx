@@ -11,6 +11,11 @@ const handleFile = (e) => {
 
   if (file) {
     setBanner(URL.createObjectURL(file));
+
+    setFormData({
+      ...formData,
+      banner: file,
+    });
   }
 };
     const navigate = useNavigate();
@@ -31,19 +36,54 @@ const handleFile = (e) => {
   }
 
 
-  const handleSubmit = (e, type) => {
-    e.preventDefault();
-    alert(`${type}: ${formData.eventName}`);
-    console.log(formData);
-  }
+  const handleSubmit = async (e, type) => {
+  e.preventDefault();
 
+  try {
+    const response = await fetch("http://127.0.0.1:5000/events", {
+  method: "POST",
+  headers: {
+  "Content-Type": "application/json",
+  Authorization: "Bearer dummy-jwt-token-xyz123",
+},
+  body: JSON.stringify({
+    title: formData.eventName,
+    description: formData.description,
+    category: formData.category,
+    location: formData.location,
+    date: formData.date,
+    start_time: formData.time,
+    price: Number(formData.price),
+    available_tickets: Number(formData.seats),
+    status: type === "Published" ? "active" : "draft",
+  }),
+});
+
+    const data = await response.json();
+
+    if (response.ok) {
+      alert(type === "Published"
+        ? "Event Published Successfully!"
+        : "Draft Saved Successfully!");
+
+      console.log(data);
+
+      navigate("/");
+    } else {
+      alert(data.message || "Failed to create event");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Server Error");
+  }
+};
   return (
     <div className="page-wrapper">
       <a href="/">← Back to My Events</a>
       <h1 className="title">Create New Event</h1>
 
       <div className="form-card">
-        <form>
+       <form onSubmit={(e) => handleSubmit(e, "Published")}>
           {/* Banner Upload */}
           <div className="form-group">
             <label>Event Banner Image</label>
@@ -126,8 +166,16 @@ const handleFile = (e) => {
 
           {/* Buttons */}
           <div className="btn-group">
-            <button className="btn-publish" onClick={(e) => handleSubmit(e, "Published")}>+ Publish Event</button>
-            <button className="btn-draft" onClick={(e) => handleSubmit(e, "Draft Saved")}>Save as Draft</button>
+            <button type="submit" className="btn-publish">
+  + Publish Event
+</button>
+            <button
+  type="button"
+  className="btn-draft"
+  onClick={(e) => handleSubmit(e, "Draft Saved")}
+>
+  Save as Draft
+</button>
           </div>
         </form>
       </div>

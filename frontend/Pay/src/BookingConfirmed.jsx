@@ -1,10 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaArrowLeft, FaCheck } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import "./App.css";
 
 function BookingConfirmed() {
     const navigate = useNavigate();
+
+    const [booking, setBooking] = useState(null);
+
+useEffect(() => {
+  fetch("http://127.0.0.1:5000/my-bookings")
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "success") {
+        setBooking(data.data.bookings[0]);
+      }
+    })
+    .catch(console.error);
+}, []);
+
   return (
     <div className="booking-page">
 
@@ -25,7 +39,7 @@ function BookingConfirmed() {
       <div className="booking-card">
         <div className="booking-header">
           <h2>Booking ID</h2>
-          <span>BK-2026-7891</span>
+          <span>{booking ? booking.booking_id : "Loading..."}</span>
         </div>
 
         <hr />
@@ -34,14 +48,18 @@ function BookingConfirmed() {
           <h3>Neon Nights Music Festival</h3>
           <p>Aug 15, 2026 • 6:00 PM</p>
           <p>Riverside Amphitheater, Austin TX</p>
-          <p>2 × General Admission</p>
+          <p>
+  {booking ? booking.number_of_tickets : "--"} × General Admission
+</p>
         </div>
 
         <hr />
 
         <div className="payment">
           <h2>Total Paid</h2>
-          <span>₹187</span>
+          <span>
+  ₹{booking ? booking.total_price : "--"}
+</span>
         </div>
       </div>
 

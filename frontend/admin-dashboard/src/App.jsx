@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import {
   LayoutDashboard,
   Calendar,
@@ -89,11 +90,18 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   
   // Data States
-  const [events, setEvents] = useState(initialEvents)
-  const [bookings, setBookings] = useState(initialBookings)
-  const [users, setUsers] = useState(initialUsers)
+  const [events, setEvents] = useState([])
+  const [bookings, setBookings] = useState([])
+  const [users, setUsers] = useState([])
   const [categories, setCategories] = useState(initialCategories)
   const [notifications, setNotifications] = useState(initialNotifications)
+
+  const [dashboardStats, setDashboardStats] = useState({
+  total_users: 0,
+  total_events: 0,
+  total_bookings: 0,
+  revenue: 0
+})
   
   // Interactive Popup / Modals
   const [modalType, setModalType] = useState(null) // 'createEvent', 'addCategory', 'sendNotification', 'generateReport', 'exportData'
@@ -123,13 +131,36 @@ function App() {
   }
 
   // Simulate loading state on initial render
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1500)
-    return () => clearTimeout(timer)
-  }, [])
+useEffect(() => {
+  const timer = setTimeout(() => {
+    setLoading(false)
+  }, 1500)
 
+  return () => clearTimeout(timer)
+}, [])
+
+useEffect(() => {
+  fetchDashboard()
+  fetchUsers()
+}, [])
+
+const fetchDashboard = async () => {
+  try {
+    const res = await axios.get("http://127.0.0.1:5000/admin/dashboard")
+    setDashboardStats(res.data.data)
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const fetchUsers = async () => {
+  try {
+    const res = await axios.get("http://127.0.0.1:5000/admin/users")
+    setUsers(res.data.data.users)
+  } catch (err) {
+    console.error(err)
+  }
+}
   // Toggle Themes
   const toggleTheme = () => {
     const nextTheme = theme === 'purple' ? 'black' : 'purple'
@@ -142,10 +173,10 @@ function App() {
   }
 
   // Calculations for dashboard counters
-  const totalEventsCount = events.length
-  const totalBookingsCount = bookings.reduce((sum, b) => sum + b.count, 0)
-  const totalRevenueVal = bookings.reduce((sum, b) => sum + b.amount, 0) + 14840 // base offset + bookings
-  const totalUsersCount = users.length + 1284 // base + users table
+  const totalEventsCount = dashboardStats.total_events
+  const totalBookingsCount = dashboardStats.total_bookings
+  const totalRevenueVal = dashboardStats.revenue
+  const totalUsersCount = dashboardStats.total_users
   const activeEventsCount = events.filter(e => e.status === 'Live').length
   const pendingApprovalsCount = 3 // static indicator
 
@@ -1105,15 +1136,15 @@ function App() {
                     </thead>
                     <tbody>
                       {users.map((u) => (
-                        <tr key={u.id}>
+                        <tr key={u.user_id}>
                           <td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                               <div style={{
                                 width: '32px', height: '32px', borderRadius: '50%', 
                                 background: 'linear-gradient(135deg, #a78bfa 0%, #6c3bff 100%)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '600'
-                              }}>{u.avatar}</div>
-                              <span style={{ fontWeight: '600' }}>{u.name}</span>
+                              }}>{u.username.charAt(0).toUpperCase()}</div>
+                              <span style={{ fontWeight: '600' }}>{u.username}</span>
                             </div>
                           </td>
                           <td>{u.email}</td>
@@ -1124,7 +1155,7 @@ function App() {
                             }}>{u.role}</span>
                           </td>
                           <td>
-                            <span className={`status-badge ${u.status === 'Active' ? 'live' : 'completed'}`}>{u.status}</span>
+                            <span className="status-badge live">Active</span>
                           </td>
                           <td>
                             <button className="action-btn" onClick={() => alert(`Modify profile config for ${u.name}`)}>Edit Role</button>
@@ -1579,4 +1610,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

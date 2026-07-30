@@ -4,6 +4,33 @@ import "./App.css";
 
 function Payment() {
     const navigate = useNavigate();
+
+    const handlePayment = async () => {
+  try {
+    const response = await fetch("http://127.0.0.1:5000/book-ticket", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        event_id: 1,
+        number_of_tickets: 2,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (data.status === "success") {
+      navigate("/booking-confirmed");
+    } else {
+      alert(data.message);
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Server Error");
+  }
+};
+
   return (
     <div className="payment-page">
       <div className="payment-container">
@@ -63,7 +90,7 @@ function Payment() {
 
             <button
   className="pay-btn"
-  onClick={() => navigate("/booking-confirmed")}
+  onClick={handlePayment}
 >
   Pay ₹624
 </button>
