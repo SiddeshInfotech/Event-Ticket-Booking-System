@@ -1,0 +1,12 @@
+{
+  "name": "event-ticket-booking-system",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EventFlow - Flask backend + React (Vite) frontend monorepo",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "seed": "node scripts/seed.mjs",
+    "start": "node scripts/start.mjs",
+    "dev": "node scripts/start.mjs"
+  }
+}
