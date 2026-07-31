@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import "./App.css";
 
 function ForgotPassword() {
-    const [current, setCurrent] = useState("");
-const [newPassword, setNewPassword] = useState("");
-const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [current, setCurrent] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
 const [currentType, setCurrentType] = useState("password");
 const [newType, setNewType] = useState("password");
@@ -15,8 +16,40 @@ const [matchError, setMatchError] = useState(false);
 const [successMsg, setSuccessMsg] = useState(false);
 const [signoutMsg, setSignoutMsg] = useState(false);
 
-const handleSubmit = (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
+
+  if (newPassword !== confirmPassword) {
+    setMatchError(true);
+    return;
+  }
+
+  setMatchError(false);
+
+  try {
+    const response = await fetch("http://127.0.0.1:5000/change-password", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: localStorage.getItem("email"),
+        new_password: newPassword,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      setSuccessMsg(true);
+      alert(data.message);
+    } else {
+      alert(data.message);
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Server Error");
+  }
 };
 
 const handleSignOut = () => {

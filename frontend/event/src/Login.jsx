@@ -27,10 +27,13 @@ function Login() {
         alert("Login Successful");
         console.log(data);
 
-        // Token आला असेल तर save होईल
+        localStorage.setItem("email", email);
+
+        
         if (data.token) {
           localStorage.setItem("token", data.token);
         }
+        
       } else {
         alert(data.message || "Login Failed");
       }
