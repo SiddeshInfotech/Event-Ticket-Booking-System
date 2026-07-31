@@ -49,7 +49,18 @@ def token_required(f):
                     "message": "Token is invalid or expired"
                 }), 401
 
-        # Check if the user is an organizer
+        return f(*args, **kwargs)
+    return decorated
+
+def organizer_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not hasattr(g, 'current_user') or g.current_user is None:
+            return jsonify({
+                "status": "error",
+                "message": "Authentication required before role verification"
+            }), 401
+
         if g.current_user.get('role') != 'organizer':
             return jsonify({
                 "status": "error",
@@ -58,3 +69,4 @@ def token_required(f):
 
         return f(*args, **kwargs)
     return decorated
+

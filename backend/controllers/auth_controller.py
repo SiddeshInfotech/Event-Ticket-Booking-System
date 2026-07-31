@@ -115,3 +115,91 @@ def logout():
         "status": "success",
         "message": "User logged out successfully"
     }), 200
+
+def forgot_password():
+    data = request.get_json() or {}
+    email = data.get('email')
+
+    if not email:
+        return jsonify({
+            "status": "error",
+            "message": "Email is required"
+        }), 400
+
+    try:
+        cursor = mysql.connection.cursor()
+        cursor.execute(
+            "SELECT user_id FROM users WHERE email = %s",
+            (email,)
+        )
+        user = cursor.fetchone()
+        cursor.close()
+
+        if not user:
+            return jsonify({
+                "status": "error",
+                "message": "Email not found"
+            }), 404
+
+        return jsonify({
+            "status": "success",
+            "message": "Email verified successfully"
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
+
+def change_password():
+    data = request.get_json() or {}
+
+    email = data.get('email')
+    new_password = data.get('new_password')
+
+    if not email or not new_password:
+        return jsonify({
+            "status": "error",
+            "message": "Email and new password are required"
+        }), 400
+
+    try:
+        cursor = mysql.connection.cursor()
+
+        cursor.execute(
+            "SELECT user_id FROM users WHERE email = %s",
+            (email,)
+        )
+
+        user = cursor.fetchone()
+
+        if not user:
+            cursor.close()
+            return jsonify({
+                "status": "error",
+                "message": "User not found"
+            }), 404
+
+        password_hash = generate_password_hash(new_password)
+
+        cursor.execute(
+            "UPDATE users SET password_hash = %s WHERE email = %s",
+            (password_hash, email)
+        )
+
+        mysql.connection.commit()
+        cursor.close()
+
+        return jsonify({
+            "status": "success",
+            "message": "Password changed successfully"
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+
