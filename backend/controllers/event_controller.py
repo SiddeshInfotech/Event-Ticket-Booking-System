@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from config.db import mysql
 
 def get_events():
+    
     organizer = getattr(g, 'current_user', None)
     if not organizer:
         return jsonify({
@@ -14,15 +15,22 @@ def get_events():
         }), 401
 
     organizer_id = organizer.get('user_id')
+    role = organizer.get('role')
 
     cursor = None
     try:
         cursor = mysql.connection.cursor()
-        cursor.execute("""
-            SELECT event_id, organizer_id, title, description, category, location, date, start_time, price, available_tickets, status, banner_image
-            FROM events
-            WHERE organizer_id = %s
-        """, (organizer_id,))
+        if role == 'organizer':
+            cursor.execute("""
+                SELECT event_id, organizer_id, title, description, category, location, date, start_time, price, available_tickets, status, banner_image
+                FROM events
+                WHERE organizer_id = %s
+            """, (organizer_id,))
+        else:
+            cursor.execute("""
+                SELECT event_id, organizer_id, title, description, category, location, date, start_time, price, available_tickets, status, banner_image
+                FROM events
+            """)
         rows = cursor.fetchall()
 
         events = []
@@ -41,6 +49,9 @@ def get_events():
                 "status": row['status'],
                 "banner_image": row['banner_image']
             })
+
+            print("Events:", events)
+            
 
         return jsonify({
             "status": "success",
@@ -67,6 +78,7 @@ def get_event(id):
         }), 401
 
     organizer_id = organizer.get('user_id')
+    role = organizer.get('role')
 
     try:
         id_int = int(id)
@@ -79,12 +91,20 @@ def get_event(id):
     cursor = None
     try:
         cursor = mysql.connection.cursor()
-        cursor.execute("""
-            SELECT event_id, organizer_id, title, description, category, location, date, start_time, price, available_tickets, status, banner_image
-            FROM events
-            WHERE event_id = %s AND organizer_id = %s
-        """, (id_int, organizer_id))
+        if role == 'organizer':
+            cursor.execute("""
+                SELECT event_id, organizer_id, title, description, category, location, date, start_time, price, available_tickets, status, banner_image
+                FROM events
+                WHERE event_id = %s AND organizer_id = %s
+            """, (id_int, organizer_id))
+        else:
+            cursor.execute("""
+                SELECT event_id, organizer_id, title, description, category, location, date, start_time, price, available_tickets, status, banner_image
+                FROM events
+                WHERE event_id = %s
+            """, (id_int,))
         row = cursor.fetchone()
+
 
         if not row:
             return jsonify({
